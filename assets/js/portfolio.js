@@ -21,7 +21,7 @@ function prog(){const r=tl.getBoundingClientRect(),p=Math.min(1,Math.max(0,(inne
 addEventListener('scroll',prog,{passive:true});addEventListener('resize',prog);prog();
 $$('#faq button').forEach(b=>b.onclick=()=>{const q=b.closest('.q'),o=!q.classList.contains('o');q.classList.toggle('o',o);b.setAttribute('aria-expanded',o)});
 const dlg=$('#dlg'),mw=$('#mw'),full=$('#full-site');
-const urls={school:'/school/',clinic:'/clinic/',homes:'/homes/'};
+const urls={school:'./school/',clinic:'./clinic/',homes:'./homes/'};
 let cur='school',dev='d',trigger=null;
 function draw(){
   mw.innerHTML=`<div class="preview-loading" role="status">Loading website…</div><div class="preview-frame ${dev==='p'?'phone':''}"><iframe title="${cur} website preview" loading="lazy"></iframe></div>`;
