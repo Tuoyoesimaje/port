@@ -8,11 +8,22 @@ const naira=new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maxim
 function render(items){grid.innerHTML=items.map(item=>`<article class="property-card reveal is-visible"><button type="button" data-property="${item.id}" aria-label="View ${item.title} in ${item.area}"><img src="${item.image}" width="1600" height="1067" loading="lazy" decoding="async" alt="${item.alt}"><div class="property-copy"><p class="area">${item.area}</p><p class="price">${naira.format(item.price)}${item.period}</p><h3>${item.title}</h3><p class="meta"><span>${item.beds} beds</span><span>${item.baths} baths</span><span>${item.size}</span></p></div></button></article>`).join("")}
 render(listings);
 const filterForm=document.querySelector("#property-filter");
-filterForm.addEventListener("submit",event=>{event.preventEvent;event.preventDefault();const area=document.querySelector("#area-filter").value,type=document.querySelector("#type-filter").value,max=document.querySelector("#price-filter").value;let items=listings.filter(item=>(area==="all"||item.area===area)&&(type==="all"||item.type===type)&&(max==="all"||item.price<=Number(max)));const sort=document.querySelector("#price-sort").value;if(sort==="low")items=[...items].sort((a,b)=>a.price-b.price);if(sort==="high")items=[...items].sort((a,b)=>b.price-a.price);render(items)});
+filterForm.addEventListener("submit",event=>{
+ event.preventDefault();
+ const cards=[...grid.querySelectorAll(".property-card")];cards.forEach(card=>card.style.opacity="0");
+ setTimeout(()=>{
+  const area=document.querySelector("#area-filter").value,type=document.querySelector("#type-filter").value,max=document.querySelector("#price-filter").value;
+  let items=listings.filter(item=>(area==="all"||item.area===area)&&(type==="all"||item.type===type)&&(max==="all"||item.price<=Number(max)));
+  const sort=document.querySelector("#price-sort").value;if(sort==="low")items=[...items].sort((a,b)=>a.price-b.price);if(sort==="high")items=[...items].sort((a,b)=>b.price-a.price);
+  if(!items.length){grid.innerHTML='<p class="empty-state">No homes match those filters.</p>'}else{render(items);[...grid.querySelectorAll(".property-card")].forEach((card,i)=>{card.style.opacity="0";card.style.transform="translateY(10px)";setTimeout(()=>{card.style.opacity="1";card.style.transform="none";card.style.transition="opacity 260ms ease,transform 260ms var(--eo)"},i*40)})}
+  document.querySelector("#result-count").textContent=`${items.length} ${items.length===1?"home":"homes"}`;
+ },150);
+});
 document.querySelector("#price-sort").addEventListener("change",()=>filterForm.requestSubmit());
-const dialog=document.querySelector("#property-dialog");
-grid.addEventListener("click",event=>{const button=event.target.closest("[data-property]");if(!button)return;const item=listings.find(x=>x.id===Number(button.dataset.property));document.querySelector("#dialog-image").src=item.image;document.querySelector("#dialog-image").alt=item.alt;document.querySelector("#dialog-area").textContent=`${item.area} · ${item.type}`;document.querySelector("#property-dialog-title").textContent=item.title;document.querySelector("#dialog-price").textContent=`${naira.format(item.price)}${item.period}`;document.querySelector("#dialog-meta").textContent=`${item.beds} beds · ${item.baths} baths · ${item.size}`;dialog.showModal()});
+const dialog=document.querySelector("#property-dialog");let propertyTrigger=null;
+grid.addEventListener("click",event=>{const button=event.target.closest("[data-property]");if(!button)return;propertyTrigger=button;const item=listings.find(x=>x.id===Number(button.dataset.property));document.querySelector("#dialog-image").src=item.image;document.querySelector("#dialog-image").alt=item.alt;document.querySelector("#dialog-area").textContent=`${item.area} · ${item.type}`;document.querySelector("#property-dialog-title").textContent=item.title;document.querySelector("#dialog-price").textContent=`${naira.format(item.price)}${item.period}`;document.querySelector("#dialog-meta").textContent=`${item.beds} beds · ${item.baths} baths · ${item.size}`;document.body.style.overflow="hidden";dialog.showModal();dialog.querySelector(".dialog-close").focus()});
 dialog.querySelector(".dialog-close").addEventListener("click",()=>dialog.close());
+dialog.addEventListener("close",()=>{document.body.style.overflow="";propertyTrigger?.focus()});
+dialog.addEventListener("cancel",event=>{event.preventDefault();dialog.close()});
 dialog.addEventListener("click",event=>{if(event.target===dialog)dialog.close()});
-const menu=document.querySelector(".homes-menu"),links=document.querySelector("#homes-links");menu.addEventListener("click",()=>{const open=menu.getAttribute("aria-expanded")==="true";menu.setAttribute("aria-expanded",String(!open));links.classList.toggle("is-open",!open)});
 document.querySelector("#inspection-form").addEventListener("submit",event=>{event.preventDefault();const form=event.currentTarget;if(!form.checkValidity()){form.querySelector(":invalid")?.focus();return}form.querySelector(".inspection-status").textContent="Demo only: nothing was sent. Open the full website to request a real inspection.";form.reset()});
